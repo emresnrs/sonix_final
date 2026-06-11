@@ -1,0 +1,58 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Geist, Geist_Mono } from "next/font/google";
+import { themeInitScript } from "@workspace/ui/scripts/theme-init";
+import { NextIntlClientProvider, hasLocale } from "@workspace/i18n";
+import { routing } from "@workspace/i18n/routing";
+import { Toaster } from "@workspace/ui/components/sonner";
+import "@workspace/ui/globals.css";
+
+const fontSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const fontMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+export const metadata: Metadata = {
+  title: "Sonix – AI Audio Transcription",
+  description: "Transcribe your audio files with AI-powered Whisper models. Fast, private, and accurate.",
+};
+
+export default async function RootLayout({
+  children,
+  params,
+}: Readonly<{
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}>) {
+  const { locale } = await params;
+
+  // Validate that the incoming `locale` parameter is valid
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeInitScript,
+          }}
+        />
+      </head>
+      <body
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
+      >
+        <NextIntlClientProvider>
+          {children}
+          <Toaster richColors />
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
